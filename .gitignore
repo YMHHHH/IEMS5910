@@ -1,0 +1,209 @@
+# ============================================
+# 操作系统相关
+# ============================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ============================================
+# IDE 和编辑器
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# ============================================
+# Python 相关
+# ============================================
+# 虚拟环境
+venv/
+env/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# 分发/打包
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+*.manifest
+*.spec
+
+# 单元测试
+.pytest_cache/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath
+*.sage.py
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# Whisper 模型缓存（可选，模型文件较大）
+.cache/
+*.pt
+*.bin
+*.onnx
+
+# ============================================
+# Node.js 相关
+# ============================================
+# 依赖
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# 构建输出
+dist/
+dist-ssr/
+build/
+*.local
+.vite/
+
+# 测试覆盖率
+coverage/
+*.lcov
+.nyc_output
+
+# 环境变量
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 日志
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# 运行时数据
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# 可选 npm 缓存目录
+.npm
+
+# 可选 eslint 缓存
+.eslintcache
+
+# 可选 REPL 历史
+.node_repl_history
+
+# 输出文件
+*.tsbuildinfo
+
+# ============================================
+# 数据库相关
+# ============================================
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+
+# ============================================
+# 音频和媒体文件（如果不需要版本控制）
+# ============================================
+# 取消注释以下行如果不想跟踪音频样本
+# *.wav
+# *.mp3
+# *.flac
+# *.ogg
+# audio_samples/
+
+# ============================================
+# 临时文件和日志
+# ============================================
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+*.log
+*.out
+
+# ============================================
+# 项目特定
+# ============================================
+# 配置文件中的敏感信息（如果使用）
+config.local.js
+config.local.json
+*.local.*
+
+# 上传的文件
+uploads/
+temp/
+tmp/
+
