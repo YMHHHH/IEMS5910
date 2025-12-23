@@ -21,11 +21,22 @@ def get_config():
         
         # 设备配置
         'DEVICE_ID': os.getenv('DEVICE_ID', 'elder-device-01'),
+
+        # 处理器选择：'native' 或 'rknn'
+        'WHISPER_TYPE': os.getenv('WHISPER_TYPE', 'native').lower(),
         
         # Whisper 模型配置（使用 openai-whisper）
         'WHISPER_MODEL': os.getenv('WHISPER_MODEL', 'base'),
         # 识别任务：'en' 或 'zh'
         'WHISPER_TASK': os.getenv('WHISPER_TASK', 'en'),
+
+        # RKNN配置（如果WHISPER_TYPE为rknn）
+        'ENCODER_MODEL_PATH': os.getenv('ENCODER_MODEL_PATH', './model/whisper_encoder_base_20s.rknn'),
+        'DECODER_MODEL_PATH': os.getenv('DECODER_MODEL_PATH', './model/whisper_decoder_base_20s.rknn'),
+        'VOCAB_PATH': os.getenv('VOCAB_PATH', './model/vocab_en.txt'),
+        'TASK': os.getenv('TASK', 'en'),  # 'en'或'zh'
+        'RKNN_TARGET': os.getenv('RKNN_TARGET', 'rk3566'),
+        'RKNN_DEVICE_ID': os.getenv('RKNN_DEVICE_ID', None),
         
         # 音频输入模式（默认使用麦克风输入，设置为'true'则使用模拟音频文件）
         'MOCK_AUDIO': os.getenv('MOCK_AUDIO', 'false').lower() == 'true',
@@ -41,6 +52,17 @@ def get_config():
         'SILENCE_THRESHOLD': int(os.getenv('SILENCE_THRESHOLD', '500')),  # 静音阈值
         'MIN_AUDIO_DURATION': float(os.getenv('MIN_AUDIO_DURATION', '1.0')),  # 最小录音时长（秒）
         'MAX_AUDIO_DURATION': float(os.getenv('MAX_AUDIO_DURATION', '5.0')),  # 最大录音时长（秒）
+
+        # 音频设备配置
+        'AUDIO_DEVICE_INDEX': os.getenv('AUDIO_DEVICE_INDEX'),
     }
     
+    # 转换AUDIO_DEVICE_INDEX为整数（如果提供了）
+    if config['AUDIO_DEVICE_INDEX'] is not None:
+        try:
+            config['AUDIO_DEVICE_INDEX'] = int(config['AUDIO_DEVICE_INDEX'])
+        except ValueError:
+            config['AUDIO_DEVICE_INDEX'] = None
+            print("⚠️  AUDIO_DEVICE_INDEX必须是整数，将使用默认设备")
+            
     return config
