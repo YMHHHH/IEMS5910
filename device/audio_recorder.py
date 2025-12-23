@@ -21,7 +21,7 @@ class AudioRecorder:
     """音频录制器 - 持续监听模式"""
     
     def __init__(self, sample_rate=16000, channels=1, chunk_size=1024, 
-                 silence_threshold=500, min_audio_duration=1.0, max_audio_duration=5.0):
+                 silence_threshold=500, min_audio_duration=1.0, max_audio_duration=5.0, device_index=2):
         """
         初始化音频录制器
         :param sample_rate: 采样率（Whisper推荐16000）
@@ -30,6 +30,7 @@ class AudioRecorder:
         :param silence_threshold: 静音阈值（音量低于此值视为静音）
         :param min_audio_duration: 最小录音时长（秒）
         :param max_audio_duration: 最大录音时长（秒）
+        :param device_index: 指定音频设备索引
         """
         if not PYTHONAUDIO_AVAILABLE:
             raise ImportError("pyaudio未安装，请运行: pip install pyaudio")
@@ -40,6 +41,7 @@ class AudioRecorder:
         self.silence_threshold = silence_threshold
         self.min_audio_duration = min_audio_duration
         self.max_audio_duration = max_audio_duration
+        self.device_index = device_index
         
         self.audio = pyaudio.PyAudio()
         self.is_listening = False
@@ -59,12 +61,28 @@ class AudioRecorder:
             try:
                 info = self.audio.get_device_info_by_index(i)
                 if info['maxInputChannels'] > 0:
-                    marker = " (默认)" if info['index'] == default_input['index'] else ""
+                    marker = ""
+                    if info['index'] == default_input['index']:
+                        marker = " (默认)"
+                    if self.device_index is not None and info['index'] == self.device_index:
+                        marker = " <-- 将使用此设备"
                     print(f"  [{info['index']}] {info['name']}{marker}")
             except:
                 pass
         print("-" * 50)
-        print(f"使用默认设备: {default_input['name']}\n")
+        
+        # 显示将使用的设备
+        if self.device_index is not None:
+            try:
+                device_info = self.audio.get_device_info_by_index(self.device_index)
+                print(f"将使用指定设备: [{self.device_index}] {device_info['name']}")
+            except Exception as e:
+                print(f"⚠️  警告: 无法访问设备索引 {self.device_index}，将使用默认设备")
+                print(f"错误信息: {e}")
+                self.device_index = None  # 回退到默认设备
+        else:
+            print(f"将使用默认设备: [{default_input['index']}] {default_input['name']}")
+        print()
     
     def _calculate_volume(self, audio_data):
         """计算音频音量（RMS）"""
@@ -110,8 +128,15 @@ class AudioRecorder:
                     stream_callback=self._audio_callback
                 )
                 
+                # 如果指定了设备索引，添加到参数中
+                if self.device_index is not None:
+                    stream_kwargs['input_device_index'] = self.device_index
+                
+                stream = self.audio.open(**stream_kwargs)
+                
                 stream.start_stream()
                 print(f"🎤 开始持续监听麦克风...")
+                print(f"   设备索引: {self.device_index if self.device_index is not None else '默认'}")
                 print(f"   采样率: {self.sample_rate} Hz")
                 print(f"   静音阈值: {self.silence_threshold}")
                 print(f"   检测到语音时自动录制并识别\n")
