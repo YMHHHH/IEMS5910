@@ -5,10 +5,12 @@
 支持麦克风输入和模拟音频文件两种模式
 """
 
+import os
+os.environ['OPENBLAS_NUM_THREADS'] = '1'
+os.environ['OMP_NUM_THREADS'] = '1'
 import socketio
 import time
 import random
-import os
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
@@ -130,18 +132,37 @@ def main():
     print(f'📋 配置加载完成')
     print(f'   服务器地址: {config["SERVER_URL"]}')
     print(f'   设备ID: {config["DEVICE_ID"]}')
-    # 打印模型配置信息（使用原生 openai-whisper）
-    print(f'   Whisper模型: {config["WHISPER_MODEL"]}')
-    print(f'   识别任务: {config.get("WHISPER_TASK", "en")}')
-    print(f'   音频模式: {"模拟音频文件" if config["MOCK_AUDIO"] else "真实麦克风输入"}')
+
+    # 根据配置选择处理器类型
+    whisper_type = config.get('WHISPER_TYPE', 'native')
+
+    if whisper_type == 'rknn':
+        print(f'🎯 使用RKNN Whisper处理器')
+        # 尝试导入RKNN处理器
+        try:
+            from whisper_rknn import WhisperHandlerRKNN
+            whisper_handler = WhisperHandlerRKNN(config)
+        except ImportError:
+            print('❌ 无法导入RKNN处理器，请确保已安装RKNN库')
+            return
+        except RuntimeError as e:
+            print(f'❌ RKNN处理器初始化失败: {e}')
+            return
+        
+        print(f'   任务: {config.get("TASK", "en")}')
+    else:
+        print(f'🎯 使用原生Whisper处理器')
+        # 使用原生Whisper处理器
+        try:
+            whisper_handler = WhisperHandler(config)
+        except Exception as e:
+            print(f'❌ 原生Whisper初始化失败: {e}')
+            return
+        
+        print(f'   模型: {config.get("WHISPER_MODEL", "base")}')
+        print(f'   任务: {config.get("WHISPER_TASK", "en")}')
     
-    # 初始化Whisper
-    try:
-        # 传入整个 config，以便 WhisperHandler 决定使用 RKNN 还是原生 whisper
-        whisper_handler = WhisperHandler(config)
-    except Exception as e:
-        print(f'❌ Whisper初始化失败: {e}')
-        return
+    print(f'   音频模式: {"模拟音频文件" if config["MOCK_AUDIO"] else "真实麦克风输入"}')
     
     # 连接到服务器
     try:
@@ -189,6 +210,9 @@ def main():
             print('\n\n🛑 收到中断信号，正在关闭...')
             if sio.connected:
                 sio.disconnect()
+            # 如果使用RKNN处理器，释放资源
+            if whisper_type == 'rknn' and hasattr(whisper_handler, 'release'):
+                whisper_handler.release()
             print('✅ 程序已退出')
     
     else:
@@ -205,7 +229,8 @@ def main():
                 channels=1,
                 silence_threshold=config.get('SILENCE_THRESHOLD', 500),
                 min_audio_duration=config.get('MIN_AUDIO_DURATION', 1.0),
-                max_audio_duration=config.get('MAX_AUDIO_DURATION', 5.0)
+                max_audio_duration=config.get('MAX_AUDIO_DURATION', 5.0),
+                device_index=config.get('AUDIO_DEVICE_INDEX')
             )
             print('✅ 音频录制器初始化成功')
             
@@ -235,6 +260,9 @@ def main():
                 audio_recorder.stop_listening()
                 if sio.connected:
                     sio.disconnect()
+                # 如果使用RKNN处理器，释放资源
+                if whisper_type == 'rknn' and hasattr(whisper_handler, 'release'):
+                    whisper_handler.release()
                 print('✅ 程序已退出')
         
         except Exception as e:
